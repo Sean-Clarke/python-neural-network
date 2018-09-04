@@ -60,10 +60,19 @@ class Network:
         self.weights = [[[random.random() for w in range(len(self.layers[l - 1]))] for h in range(len(self.layers[l]))] for l in range(1, len(self.layers))]
         self.biases = False
     def __repr__(self):
-        return str(self.layers[-1])
+        rstr = ''
+        for l in range(len(self.layers)):
+            for n in self.layers[l]:
+                rstr += str(n.get_activation()) + '  '
+            rstr += '\n'
+        return rstr
+        
      
     def print_inputs(self):
         print(str(self.layers[0]))
+        
+    def print_outputs(self):
+        print(str(self.layers[-1]))
      
     def print_nodes(self):
         print('\n'.join([str(layer) for layer in self.layers]))
@@ -92,7 +101,7 @@ class Network:
                     net += self.biases[l - 1]
                 self.layers[l][n].set_input(net)
         
-    def backpropagate(self, key, eta, iterations=1):
+    def backpropagate(self, key, eta, iterations=1): #weights in self.weights[0] never update / output_error doesn't seem to get used anywhere
         for a in range(len(key)):
             self.layers[-1][a].evaluate(key[a])
         output_error = sum([n.get_error() for n in self.layers[-1] ])
@@ -110,7 +119,7 @@ class Network:
                         s = self.layers[l][o].get_derivative()
                         t = self.layers[l - 1][i].get_activation()
                         delta = f * s * t
-                        new_weights[l - 1][o][i] = self.weights[l - 1][o][i] - eta * delta
+                        new_weights[l - 1][o][i] = self.weights[l - 1][o][i] - eta * delta # what is the deal here, why are you using l - 1
             self.weights = new_weights
         
     def train(self, inputs, answers, eta=0.25, epoches=1):
@@ -145,8 +154,18 @@ class Network:
             for n in range(len(self.layers[0])):
                 self.layers[0][n].set_activation(inputs[i][n])
             self.feedforward()
-            self.print_inputs()
-            print(str(self.layers[-1]))
+            self.print_input()
+            self.print_output()
+        
+if __name__ == "__main__":
+    #n = Network([2, 2, 1])
+    #n.train([[0, 0], [0, 1], [1, 0], [1, 1]], [[0], [1], [1], [0]], epoches=1)
+    #n.test([[0, 0], [0, 1], [1, 0], [1, 1]])
+    n = Network([1, 2, 2, 2, 1])
+    n.set_biases([1, 1, 1, 1])
+    n.train([[0]], [[1]], eta=0.1, epoches=1)
+    print(n)
+    #n.test([[0], [1]])
             
 """
 import numpy
